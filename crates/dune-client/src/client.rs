@@ -35,17 +35,16 @@ const NDJSON_CONTENT_TYPE: &str = "application/x-ndjson";
 pub trait DuneClient {
     /// Triggers execution of a Dune query by ID with optional parameters.
     ///
-    /// Named `execute_query` rather than `execute` to avoid colliding with
-    /// the inherent [`ClientWithMiddleware::execute`] method, which would
-    /// otherwise take precedence during method resolution.
-    async fn execute_query(
+    /// Prefixed with `dune_` so multiple client traits can be implemented on the
+    /// same [`ClientWithMiddleware`] without method-name collisions.
+    async fn dune_execute_query(
         &self,
         query_id: QueryId,
         params: &[QueryParameter],
     ) -> Result<ExecuteResponse, Error>;
 
     /// Fetches the current results of an execution without polling.
-    async fn get_results<T: DeserializeOwned>(
+    async fn dune_get_results<T: DeserializeOwned>(
         &self,
         execution_id: &ExecutionId,
     ) -> Result<ResultsResponse<T>, Error>;
@@ -53,7 +52,7 @@ pub trait DuneClient {
     /// Fetches the latest saved results of a query (`GET /query/{id}/results`)
     /// without triggering an execution. `limit`/`offset` drive pagination;
     /// follow [`LatestResultsResponse::next_offset`] for subsequent pages.
-    async fn get_latest_results<T: DeserializeOwned>(
+    async fn dune_get_latest_results<T: DeserializeOwned>(
         &self,
         query_id: QueryId,
         limit: Option<u64>,
@@ -62,14 +61,14 @@ pub trait DuneClient {
 
     /// Polls for execution results until the execution reaches a terminal
     /// state. Terminal failure states return [`Error::ExecutionEnded`].
-    async fn wait_for_results<T: DeserializeOwned>(
+    async fn dune_wait_for_results<T: DeserializeOwned>(
         &self,
         execution_id: &ExecutionId,
         poll_interval: Duration,
     ) -> Result<QueryResult<T>, Error>;
 
     /// Triggers a query and polls until results are ready.
-    async fn execute_and_wait<T: DeserializeOwned>(
+    async fn dune_execute_and_wait<T: DeserializeOwned>(
         &self,
         query_id: QueryId,
         params: &[QueryParameter],
@@ -77,24 +76,24 @@ pub trait DuneClient {
     ) -> Result<QueryResult<T>, Error>;
 
     /// Checks connectivity to the Dune API.
-    async fn ping(&self) -> Result<(), Error>;
+    async fn dune_ping(&self) -> Result<(), Error>;
 
     /// Appends rows to an existing Dune table as NDJSON.
-    async fn insert_rows<T: Serialize>(
+    async fn dune_insert_rows<T: Serialize>(
         &self,
         table: &TableRef,
         rows: &[T],
     ) -> Result<InsertRowsResponse, Error>;
 
     /// Creates an empty Dune table with a defined schema.
-    async fn create_table(&self, req: &CreateTableRequest) -> Result<CreateTableResponse, Error>;
+    async fn dune_create_table(&self, req: &CreateTableRequest) -> Result<CreateTableResponse, Error>;
 
     /// Permanently deletes a Dune table. Succeeds if the table does not exist.
-    async fn delete_table(&self, table: &TableRef) -> Result<(), Error>;
+    async fn dune_delete_table(&self, table: &TableRef) -> Result<(), Error>;
 }
 
 impl DuneClient for ClientWithMiddleware {
-    async fn execute_query(
+    async fn dune_execute_query(
         &self,
         query_id: QueryId,
         params: &[QueryParameter],
@@ -110,7 +109,7 @@ impl DuneClient for ClientWithMiddleware {
         deserialize_json(response).await
     }
 
-    async fn get_results<T: DeserializeOwned>(
+    async fn dune_get_results<T: DeserializeOwned>(
         &self,
         execution_id: &ExecutionId,
     ) -> Result<ResultsResponse<T>, Error> {
@@ -126,7 +125,7 @@ impl DuneClient for ClientWithMiddleware {
         deserialize_json(response).await
     }
 
-    async fn get_latest_results<T: DeserializeOwned>(
+    async fn dune_get_latest_results<T: DeserializeOwned>(
         &self,
         query_id: QueryId,
         limit: Option<u64>,
@@ -146,13 +145,13 @@ impl DuneClient for ClientWithMiddleware {
         deserialize_json(response).await
     }
 
-    async fn wait_for_results<T: DeserializeOwned>(
+    async fn dune_wait_for_results<T: DeserializeOwned>(
         &self,
         execution_id: &ExecutionId,
         poll_interval: Duration,
     ) -> Result<QueryResult<T>, Error> {
         loop {
-            let response: ResultsResponse<T> = self.get_results(execution_id).await?;
+            let response: ResultsResponse<T> = self.dune_get_results(execution_id).await?;
             let state = response.status.state();
 
             match response.status {
@@ -170,18 +169,18 @@ impl DuneClient for ClientWithMiddleware {
         }
     }
 
-    async fn execute_and_wait<T: DeserializeOwned>(
+    async fn dune_execute_and_wait<T: DeserializeOwned>(
         &self,
         query_id: QueryId,
         params: &[QueryParameter],
         poll_interval: Duration,
     ) -> Result<QueryResult<T>, Error> {
-        let execution = self.execute_query(query_id, params).await?;
-        self.wait_for_results(&execution.execution_id, poll_interval)
+        let execution = self.dune_execute_query(query_id, params).await?;
+        self.dune_wait_for_results(&execution.execution_id, poll_interval)
             .await
     }
 
-    async fn ping(&self) -> Result<(), Error> {
+    async fn dune_ping(&self) -> Result<(), Error> {
         let response = self
             .get(format!("{DEFAULT_BASE_URL}/auth/session/status"))
             .with_extension(RouteLabel("/auth/session/status"))
@@ -192,7 +191,7 @@ impl DuneClient for ClientWithMiddleware {
         check_status(response).await.map(drop)
     }
 
-    async fn insert_rows<T: Serialize>(
+    async fn dune_insert_rows<T: Serialize>(
         &self,
         table: &TableRef,
         rows: &[T],
@@ -218,7 +217,7 @@ impl DuneClient for ClientWithMiddleware {
         deserialize_json(response).await
     }
 
-    async fn create_table(&self, req: &CreateTableRequest) -> Result<CreateTableResponse, Error> {
+    async fn dune_create_table(&self, req: &CreateTableRequest) -> Result<CreateTableResponse, Error> {
         let response = self
             .post(format!("{DEFAULT_BASE_URL}/uploads"))
             .with_extension(RouteLabel("/uploads"))
@@ -230,7 +229,7 @@ impl DuneClient for ClientWithMiddleware {
         deserialize_json(response).await
     }
 
-    async fn delete_table(&self, table: &TableRef) -> Result<(), Error> {
+    async fn dune_delete_table(&self, table: &TableRef) -> Result<(), Error> {
         let response = self
             .delete(format!(
                 "{DEFAULT_BASE_URL}/uploads/{}/{}",
@@ -325,7 +324,7 @@ mod tests {
             QueryParameter::new("limit", ParameterValue::Number(10.0)),
         ];
         let response = client(&server)
-            .execute_query(QueryId(123), &params)
+            .dune_execute_query(QueryId(123), &params)
             .await
             .expect("execute succeeds");
 
@@ -348,7 +347,7 @@ mod tests {
             .await;
 
         client(&server)
-            .execute_query(QueryId(7), &[])
+            .dune_execute_query(QueryId(7), &[])
             .await
             .expect("execute succeeds");
     }
@@ -392,7 +391,7 @@ mod tests {
             .await;
 
         let result: QueryResult<Row> = client(&server)
-            .execute_and_wait(QueryId(123), &[], POLL)
+            .dune_execute_and_wait(QueryId(123), &[], POLL)
             .await
             .expect("execution completes");
 
@@ -443,7 +442,7 @@ mod tests {
             .await;
 
         let response: LatestResultsResponse<Row> = client(&server)
-            .get_latest_results(QueryId(7695360), Some(100), Some(200))
+            .dune_get_latest_results(QueryId(7695360), Some(100), Some(200))
             .await
             .expect("fetch succeeds");
 
@@ -467,7 +466,7 @@ mod tests {
             .await;
 
         let response: LatestResultsResponse<serde_json::Value> = client(&server)
-            .get_latest_results(QueryId(7), None, None)
+            .dune_get_latest_results(QueryId(7), None, None)
             .await
             .expect("fetch succeeds");
         assert_eq!(
@@ -489,7 +488,7 @@ mod tests {
             .await;
 
         let error = client(&server)
-            .wait_for_results::<serde_json::Value>(&ExecutionId::from("exec-9"), POLL)
+            .dune_wait_for_results::<serde_json::Value>(&ExecutionId::from("exec-9"), POLL)
             .await
             .expect_err("failed execution is an error");
 
@@ -513,7 +512,7 @@ mod tests {
             .mount(&server)
             .await;
 
-        let error = client(&server).ping().await.expect_err("401 is an error");
+        let error = client(&server).dune_ping().await.expect_err("401 is an error");
 
         assert!(
             matches!(
@@ -559,7 +558,7 @@ mod tests {
             },
         ];
         let response = client(&server)
-            .insert_rows(&TableRef::new("my_team", "balances"), &rows)
+            .dune_insert_rows(&TableRef::new("my_team", "balances"), &rows)
             .await
             .expect("insert succeeds");
 
@@ -607,7 +606,7 @@ mod tests {
             is_private: false,
         };
         let response = client(&server)
-            .create_table(&request)
+            .dune_create_table(&request)
             .await
             .expect("create succeeds");
 
@@ -625,7 +624,7 @@ mod tests {
             .await;
 
         client(&server)
-            .delete_table(&TableRef::new("my_team", "missing"))
+            .dune_delete_table(&TableRef::new("my_team", "missing"))
             .await
             .expect("missing table delete is ok");
     }
@@ -640,7 +639,7 @@ mod tests {
             .await;
 
         let error = client(&server)
-            .delete_table(&TableRef::new("my_team", "balances"))
+            .dune_delete_table(&TableRef::new("my_team", "balances"))
             .await
             .expect_err("500 is an error");
 
