@@ -5,9 +5,8 @@ use serde::{Serialize, de::DeserializeOwned};
 use crate::{
     Error,
     model::{
-        CreateTableRequest, CreateTableResponse, ExecuteResponse, ExecutionId,
-        InsertRowsResponse, LatestResultsResponse, QueryId, QueryParameter, QueryResult,
-        TableRef,
+        CreateTableRequest, CreateTableResponse, ExecuteResponse, ExecutionId, InsertRowsResponse,
+        LatestResultsResponse, QueryId, QueryParameter, QueryResult, TableRef,
     },
 };
 
@@ -76,7 +75,10 @@ pub trait DuneClient {
     ) -> Result<InsertRowsResponse, Error>;
 
     /// Creates an empty Dune table with a defined schema.
-    async fn dune_create_table(&self, req: &CreateTableRequest) -> Result<CreateTableResponse, Error>;
+    async fn dune_create_table(
+        &self,
+        req: &CreateTableRequest,
+    ) -> Result<CreateTableResponse, Error>;
 
     /// Permanently deletes a Dune table. Succeeds if the table does not exist.
     async fn dune_delete_table(&self, table: &TableRef) -> Result<(), Error>;

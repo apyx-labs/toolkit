@@ -142,7 +142,10 @@ impl DuneClient for ClientWithMiddleware {
         deserialize_json(response).await
     }
 
-    async fn dune_create_table(&self, req: &CreateTableRequest) -> Result<CreateTableResponse, Error> {
+    async fn dune_create_table(
+        &self,
+        req: &CreateTableRequest,
+    ) -> Result<CreateTableResponse, Error> {
         let response = self
             .post(format!("{DEFAULT_BASE_URL}/uploads"))
             .with_extension(RouteLabel("/uploads"))
@@ -437,7 +440,10 @@ mod tests {
             .mount(&server)
             .await;
 
-        let error = client(&server).dune_ping().await.expect_err("401 is an error");
+        let error = client(&server)
+            .dune_ping()
+            .await
+            .expect_err("401 is an error");
 
         assert!(
             matches!(

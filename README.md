@@ -31,6 +31,17 @@ cargo ci-audit               # dependency advisories (cargo-audit)
 cargo +nightly ci-udeps      # unused dependencies (cargo-udeps)
 ```
 
+## Disclaimer
+
+All crates in this repository are provided **as-is**, without warranty of any kind,
+express or implied, including but not limited to merchantability, fitness for a
+particular purpose, or non-infringement. Apyx makes no guarantees regarding
+correctness, security, availability, or suitability for any use case.
+
+By using or depending on these crates, you assume **all liability and risk**
+arising from that use, including any direct or indirect damages, data loss, or
+operational impact.
+
 ## License
 
 Apache-2.0
