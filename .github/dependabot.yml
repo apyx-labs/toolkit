@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Rust / Cargo dependencies
+  - package-ecosystem: "cargo"
+    directory: "/"
+
+    schedule:
+      interval: "daily"
+
+    cooldown:
+      semver-major-days: 14
+      semver-minor-days: 7
+      semver-patch-days: 3
+
+    open-pull-requests-limit: 4
+    labels:
+      - "dependencies"
+      - "rust"
+
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+
+    schedule:
+      interval: "weekly"
+
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+    commit-message:
+      prefix: "chore"
+      include: "scope"
