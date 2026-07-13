@@ -9,8 +9,8 @@ repository = "https://github.com/apyx-labs/toolkit"
 
 [workspace.dependencies]
 # Workspace Dependencies
-apyx-middleware = { path = "crates/middleware" }
-dune-client     = { path = "crates/dune-client" }
+apyx-reqwest-middleware = { path = "crates/apyx-reqwest-middleware" }
+dune-client             = { path = "crates/dune-client" }
 
 # Crates.io Dependencies
 async-trait        = "0.1.89"

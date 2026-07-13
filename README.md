@@ -6,7 +6,7 @@ Open-source Rust crates from [Apyx](https://github.com/apyx-labs).
 
 | Crate | Path | Description |
 |---|---|---|
-| `apyx-middleware` | `crates/middleware` | reqwest middleware: header auth, URL rebasing, Prometheus client metrics |
+| `apyx-reqwest-middleware` | `crates/apyx-reqwest-middleware` | reqwest middleware: header auth, URL rebasing, Prometheus client metrics |
 | `dune-client` | `crates/dune-client` | Client for the [Dune Analytics API](https://docs.dune.com/api-reference/overview/introduction) |
 
 ## Usage

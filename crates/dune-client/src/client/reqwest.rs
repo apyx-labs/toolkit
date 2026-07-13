@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use apyx_middleware::RouteLabel;
+use apyx_reqwest_middleware::RouteLabel;
 use reqwest::{Response, header::CONTENT_TYPE};
 use reqwest_middleware::ClientWithMiddleware;
 use serde::{Serialize, de::DeserializeOwned};

@@ -8,11 +8,11 @@ description          = "Client for the Dune Analytics API"
 
 [features]
 default = ["reqwest"]
-reqwest = ["dep:apyx-middleware", "dep:reqwest", "dep:reqwest-middleware", "dep:tokio"]
+reqwest = ["dep:apyx-reqwest-middleware", "dep:reqwest", "dep:reqwest-middleware", "dep:tokio"]
 
 [dependencies]
 # Local Crates
-apyx-middleware = { workspace = true, optional = true }
+apyx-reqwest-middleware = { workspace = true, optional = true }
 
 # Workspace deps (no extra features)
 serde_json.workspace = true

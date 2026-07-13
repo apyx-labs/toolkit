@@ -1,4 +1,4 @@
-use apyx_middleware::{HeaderAuthMiddleware, RebaseUrlMiddleware};
+use apyx_reqwest_middleware::{HeaderAuthMiddleware, RebaseUrlMiddleware};
 use reqwest::{Url, header::HeaderName};
 
 use crate::{Error, client::DEFAULT_BASE_URL};
