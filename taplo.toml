@@ -1,0 +1,30 @@
+# taplo configuration — https://taplo.tamasfe.dev/configuration/file.html
+# Run `taplo fmt` to format, `taplo fmt --check` to verify.
+
+include = ["**/*.toml"]
+exclude = ["target/**"]
+
+[formatting]
+# Expand/collapse arrays based on this line width.
+column_width = 100
+# Long arrays expand to one element per line; short ones collapse back.
+array_auto_expand   = true
+array_auto_collapse = true
+# Trailing comma when an array is expanded over multiple lines.
+array_trailing_comma = true
+# Keep spaces inside inline-table braces (`{ workspace = true }`) to match
+# cargo-sort's output; `true` would strip them to `{workspace = true}`.
+compact_inline_tables = false
+# Don't vertically align `=`; avoids noisy diffs when one entry grows.
+align_entries  = true
+align_comments = true
+# Collapse 2+ blank lines to 1, preserving the single-blank-line group
+# separators that `cargo sort --grouped` relies on.
+allowed_blank_lines = 1
+trailing_newline    = true
+
+# Key/array order is owned elsewhere:
+#   - dependency ordering by `cargo sort --grouped`
+# so taplo must NOT reorder anything.
+reorder_keys   = false
+reorder_arrays = false

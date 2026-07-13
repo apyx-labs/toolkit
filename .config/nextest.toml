@@ -1,0 +1,35 @@
+# cargo-nextest configuration — https://nexte.st/docs/configuration/
+
+[profile.default]
+# Show output from failing tests inline as they fail, and again in a summary
+# at the end of the run.
+failure-output = "immediate-final"
+# Don't print output for passing tests.
+success-output = "never"
+# Per-line status: report on every test that passes/fails/is skipped.
+status-level = "pass"
+# End-of-run summary: surface flaky and leaky tests, not just failures.
+final-status-level = "flaky"
+# Don't stop on first failure locally — see the full picture in one run.
+fail-fast = false
+# No retries locally; flakiness should be visible, not hidden.
+retries = 0
+# Flag tests slower than 30s, and kill any single test that runs >2 min
+# (4 × 30s) in case it hangs.
+slow-timeout = { period = "30s", terminate-after = 4 }
+
+# CI profile: `cargo nextest run --profile ci`
+[profile.ci]
+# Retry flaky tests a couple of times with exponential backoff so transient
+# failures don't redden the build, while still reporting them as flaky.
+retries = { backoff = "exponential", count = 2, delay = "2s", jitter = true }
+# Keep going after failures so CI reports every broken test in one run.
+fail-fast          = false
+failure-output     = "immediate-final"
+final-status-level = "flaky"
+slow-timeout       = { period = "60s", terminate-after = 3 }
+
+# Emit a JUnit report for CI test reporting/annotations.
+# Written to target/nextest/ci/junit.xml.
+[profile.ci.junit]
+path = "junit.xml"

@@ -1,0 +1,32 @@
+[workspace]
+resolver = "3"
+members  = ["crates/*"]
+
+[workspace.package]
+edition    = "2024"
+license    = "Apache-2.0"
+repository = "https://github.com/apyx-labs/toolkit"
+
+[workspace.dependencies]
+# Workspace Dependencies
+apyx-middleware = { path = "crates/middleware" }
+dune-client     = { path = "crates/dune-client" }
+
+# Crates.io Dependencies
+async-trait = "0.1.89"
+chrono = "0.4.45"
+http = "1.4.1"
+prometheus-client = "0.25.0"
+reqwest = "0.13.4"
+reqwest-middleware = "0.5.2"
+reqwest-retry = "0.9.1"
+serde = "1.0.228"
+serde_json = "1.0.150"
+serde_with = "3.21.0"
+strum = "0.28.0"
+thiserror = "2.0.18"
+tokio = "1.52.3"
+wiremock = "0.6.5"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"

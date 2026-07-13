@@ -1,0 +1,6 @@
+[alias]
+ci-sort   = "sort --workspace --grouped"
+ci-test   = "nextest run --workspace --all-features --all-targets"
+ci-clippy = "clippy --workspace --all-targets --all-features -- -D warnings -D rust-2018-idioms"
+ci-audit  = "audit -D warnings"
+ci-udeps  = "udeps --workspace --all-targets --all-features"

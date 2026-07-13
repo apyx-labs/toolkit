@@ -1,0 +1,9 @@
+[toolchain]
+# Pinned stable toolchain used for building, testing, clippy.
+# rustup auto-installs this when any cargo command runs in the repo.
+# Note: `cargo +nightly fmt` uses a separate nightly toolchain (see
+# scripts/install_prerequisites.sh) because the rustfmt config relies on
+# unstable options.
+channel    = "stable"
+components = ["clippy", "rustfmt"]
+profile    = "minimal"
