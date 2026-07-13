@@ -6,9 +6,18 @@ license.workspace    = true
 repository.workspace = true
 description          = "Client for the Dune Analytics API"
 
+[features]
+default = ["reqwest"]
+reqwest = [
+    "dep:apyx-middleware",
+    "dep:reqwest",
+    "dep:reqwest-middleware",
+    "dep:tokio",
+]
+
 [dependencies]
 # Local Crates
-apyx-middleware.workspace = true
+apyx-middleware = { workspace = true, optional = true }
 
 # Workspace deps (no extra features)
 serde_json.workspace = true
@@ -16,12 +25,15 @@ serde_with.workspace = true
 thiserror.workspace  = true
 
 # Workspace deps (with additional features)
-chrono             = { workspace = true, features = ["serde"] }
-reqwest            = { workspace = true, features = ["json"] }
-reqwest-middleware = { workspace = true, features = ["json", "query"] }
-serde              = { workspace = true, features = ["derive"] }
-strum              = { workspace = true, features = ["derive"] }
-tokio              = { workspace = true, features = ["time"] }
+chrono  = { workspace = true, features = ["serde"] }
+reqwest = { workspace = true, optional = true, features = ["json"] }
+reqwest-middleware = { workspace = true, optional = true, features = [
+    "json",
+    "query",
+] }
+serde   = { workspace = true, features = ["derive"] }
+strum   = { workspace = true, features = ["derive"] }
+tokio   = { workspace = true, optional = true, features = ["time"] }
 
 [dev-dependencies]
 tokio              = { workspace = true, features = ["macros", "rt-multi-thread"] }
