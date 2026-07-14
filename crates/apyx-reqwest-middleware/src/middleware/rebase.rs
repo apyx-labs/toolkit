@@ -18,6 +18,9 @@ pub struct RebaseUrlMiddleware {
 impl RebaseUrlMiddleware {
     /// `from` and `to` are treated as URL prefixes; the part of the request
     /// URL following the `from` prefix is preserved, as is the query string.
+    /// The `from` path must match up to a path-segment boundary, so a
+    /// host-only `from` matches every path on that host, while `/api/v1`
+    /// matches `/api/v1/things` but not `/api/v10/things`.
     pub fn new(from: Url, to: Url) -> Self {
         Self { from, to }
     }
@@ -26,7 +29,16 @@ impl RebaseUrlMiddleware {
         if url.scheme() != self.from.scheme() || url.authority() != self.from.authority() {
             return None;
         }
-        let suffix = url.path().strip_prefix(self.from.path())?;
+        // Trim trailing slashes so a host-only `from` (whose parsed path is
+        // "/") leaves the suffix's leading slash intact, then require the
+        // match to end on a segment boundary: "/api/v1" is a string prefix of
+        // "/api/v10/things" but not a path prefix.
+        let suffix = url
+            .path()
+            .strip_prefix(self.from.path().trim_end_matches('/'))?;
+        if !suffix.is_empty() && !suffix.starts_with('/') {
+            return None;
+        }
 
         let mut rebased = self.to.clone();
         rebased.set_path(&format!("{}{suffix}", self.to.path().trim_end_matches('/')));
@@ -81,6 +93,37 @@ mod tests {
             )
             .as_deref(),
             Some("http://localhost:8080/mock/things/42?limit=10"),
+        );
+    }
+
+    /// Regression: a host-only `from` URL parses with path "/", which used to
+    /// swallow the suffix's leading slash and glue the suffix straight onto
+    /// the `to` path (rebasing https://api.kraken.com/0/private/Balance onto
+    /// http://127.0.0.1:8080/kraken/ produced /kraken0/private/Balance).
+    #[test]
+    fn rebases_from_host_only_base_url() {
+        assert_eq!(
+            rebase(
+                "https://api.kraken.com",
+                "http://127.0.0.1:8080/kraken/",
+                "https://api.kraken.com/0/private/Balance",
+            )
+            .as_deref(),
+            Some("http://127.0.0.1:8080/kraken/0/private/Balance"),
+        );
+    }
+
+    /// The `from` path must match on a whole path segment: /api/v1 is not a
+    /// prefix of /api/v10/things, even though it is a string prefix.
+    #[test]
+    fn passes_through_prefix_ending_mid_segment() {
+        assert_eq!(
+            rebase(
+                "https://api.example.com/api/v1",
+                "http://localhost:8080/mock",
+                "https://api.example.com/api/v10/things",
+            ),
+            None,
         );
     }
 
