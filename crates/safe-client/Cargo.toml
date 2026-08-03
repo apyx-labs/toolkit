@@ -6,9 +6,17 @@ license.workspace    = true
 repository.workspace = true
 description          = "Client for the Safe Transaction Service API"
 
+[features]
+default = ["reqwest"]
+reqwest = [
+  "dep:apyx-reqwest-middleware",
+  "dep:reqwest",
+  "dep:reqwest-middleware",
+]
+
 [dependencies]
 # Local Crates
-apyx-reqwest-middleware.workspace = true
+apyx-reqwest-middleware = { workspace = true, optional = true }
 apyx-serde-ext.workspace          = true
 
 # Workspace deps (no extra features)
@@ -21,14 +29,18 @@ alloy                  = { workspace = true, features = ["dyn-abi", "signers", "
 alloy-chains.workspace = true
 alloy-primitives       = { workspace = true, features = ["serde"] }
 chrono                 = { workspace = true, features = ["serde"] }
-reqwest                = { workspace = true, features = ["json"] }
-reqwest-middleware     = { workspace = true, features = ["json", "query"] }
+reqwest                = { workspace = true, optional = true, features = ["json"] }
+reqwest-middleware     = { workspace = true, optional = true, features = ["json", "query"] }
 serde                  = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 alloy              = { workspace = true, features = ["signer-local"] }
 tokio              = { workspace = true, features = ["macros", "rt-multi-thread"] }
 wiremock.workspace = true
+
+[[test]]
+name = "propose_and_confirm"
+required-features = ["reqwest"]
 
 [lints]
 workspace = true
