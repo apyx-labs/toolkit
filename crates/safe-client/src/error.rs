@@ -1,23 +1,29 @@
-use reqwest::StatusCode;
 use thiserror::Error;
 
 /// Errors returned by the Safe Transaction Service client.
 #[derive(Debug, Error)]
 pub enum Error {
+    #[cfg(feature = "reqwest")]
     #[error("API key is not a valid header value: {0}")]
     InvalidApiKey(#[source] reqwest::header::InvalidHeaderValue),
     #[error("invalid base URL: {0}")]
     InvalidBaseUrl(#[source] url::ParseError),
     #[error("unsupported Safe Transaction Service network: {0:?}")]
     UnsupportedNetwork(alloy_chains::NamedChain),
+    #[cfg(feature = "reqwest")]
     #[error("error sending request: {0}")]
     SendRequest(#[source] reqwest_middleware::Error),
+    #[cfg(feature = "reqwest")]
     #[error("failed to deserialize response: {0}")]
     DeserializeResponse(#[source] reqwest::Error),
     #[error("failed to serialize request: {0}")]
     SerializeRequest(#[source] serde_json::Error),
+    #[cfg(feature = "reqwest")]
     #[error("API error (HTTP {status}): {body}")]
-    Api { status: StatusCode, body: String },
+    Api {
+        status: reqwest::StatusCode,
+        body: String,
+    },
     #[error("failed to sign SafeTx digest: {0}")]
     Signing(#[source] alloy::signers::Error),
 }

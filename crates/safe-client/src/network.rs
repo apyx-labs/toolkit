@@ -1,13 +1,14 @@
 //! Safe Transaction Service base-URL construction over [`alloy_chains::NamedChain`].
 
 use alloy_chains::NamedChain;
-use reqwest::Url;
+use url::Url;
 
 use crate::Error;
 
 /// Canonical base URL that [`SafeClient`](crate::SafeClient) builds requests
-/// against. [`rebase_middleware`](crate::rebase_middleware) rewrites this prefix
-/// to the caller's chosen network (or a mock server in tests).
+/// against. When the `reqwest` feature is enabled,
+/// [`rebase_middleware`](crate::rebase_middleware) rewrites this prefix to the
+/// caller's chosen network (or a mock server in tests).
 pub const DEFAULT_BASE_URL: &str = "https://api.safe.global/tx-service/eth/api/v2";
 
 /// Maps a [`NamedChain`] to the EIP-3770 short name the Safe gateway expects.
