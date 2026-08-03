@@ -10,9 +10,14 @@ repository = "https://github.com/apyx-labs/toolkit"
 [workspace.dependencies]
 # Workspace Dependencies
 apyx-reqwest-middleware = { path = "crates/apyx-reqwest-middleware" }
+apyx-serde-ext          = { path = "crates/apyx-serde-ext" }
 dune-client             = { path = "crates/dune-client" }
+safe-client             = { path = "crates/safe-client" }
 
 # Crates.io Dependencies
+alloy              = "2.0.5"
+alloy-chains       = "0.2.34"
+alloy-primitives   = "1.6.0"
 async-trait        = "0.1.89"
 chrono             = "0.4.45"
 http               = "1.4.1"
@@ -26,6 +31,7 @@ serde_with         = "3.21.0"
 strum              = "0.28.0"
 thiserror          = "2.0.18"
 tokio              = "1.52.3"
+url                = "2.5"
 wiremock           = "0.6.5"
 
 [workspace.lints.clippy]
