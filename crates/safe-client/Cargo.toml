@@ -1,0 +1,30 @@
+[package]
+name    = "safe-client"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# Local Crates
+apyx-reqwest-middleware.workspace = true
+common.workspace                  = true
+
+# Workspace deps (no extra features)
+serde_json.workspace = true
+thiserror.workspace  = true
+url.workspace        = true
+
+# Workspace deps (with additional features)
+alloy              = { workspace = true, features = ["dyn-abi", "signers", "sol-types"] }
+alloy-primitives   = { workspace = true, features = ["serde"] }
+chrono             = { workspace = true, features = ["serde"] }
+reqwest            = { workspace = true, features = ["json"] }
+reqwest-middleware = { workspace = true, features = ["json", "query"] }
+serde              = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+alloy              = { workspace = true, features = ["signer-local"] }
+tokio              = { workspace = true, features = ["macros", "rt-multi-thread"] }
+wiremock.workspace = true
+
+[lints]
+workspace = true
