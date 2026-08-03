@@ -1,6 +1,6 @@
 //! The `SafeClient` extension trait.
 //!
-//! With the `reqwest` feature, [`request`] provides [`SafeClient`] for
+//! With the `reqwest` feature, [`reqwest`] provides [`SafeClient`] for
 //! [`reqwest_middleware::ClientWithMiddleware`].
 
 use alloy::primitives::{Address, B256, Bytes};
@@ -11,12 +11,12 @@ use crate::{
 };
 
 #[cfg(feature = "reqwest")]
-pub mod request;
+pub mod reqwest;
 
 /// Operations against the [Safe Transaction Service] v2 API.
 ///
 /// With the `reqwest` feature, implemented for
-/// [`reqwest_middleware::ClientWithMiddleware`] in [`request`]. The target
+/// [`reqwest_middleware::ClientWithMiddleware`] in [`reqwest`]. The target
 /// network is pinned at construction by registering
 /// [`rebase_middleware`](crate::rebase_middleware); auth is a
 /// [`HeaderAuthMiddleware`](crate::HeaderAuthMiddleware). Every request
