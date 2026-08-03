@@ -8,16 +8,12 @@ description          = "Client for the Safe Transaction Service API"
 
 [features]
 default = ["reqwest"]
-reqwest = [
-  "dep:apyx-reqwest-middleware",
-  "dep:reqwest",
-  "dep:reqwest-middleware",
-]
+reqwest = ["dep:apyx-reqwest-middleware", "dep:reqwest", "dep:reqwest-middleware"]
 
 [dependencies]
 # Local Crates
-apyx-reqwest-middleware = { workspace = true, optional = true }
-apyx-serde-ext.workspace          = true
+apyx-reqwest-middleware  = { workspace = true, optional = true }
+apyx-serde-ext.workspace = true
 
 # Workspace deps (no extra features)
 serde_json.workspace = true
@@ -39,7 +35,7 @@ tokio              = { workspace = true, features = ["macros", "rt-multi-thread"
 wiremock.workspace = true
 
 [[test]]
-name = "propose_and_confirm"
+name              = "propose_and_confirm"
 required-features = ["reqwest"]
 
 [lints]
