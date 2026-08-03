@@ -7,7 +7,9 @@ Open-source Rust crates from [Apyx](https://github.com/apyx-labs).
 | Crate | Path | Description |
 |---|---|---|
 | `apyx-reqwest-middleware` | `crates/apyx-reqwest-middleware` | reqwest middleware: header auth, URL rebasing, Prometheus client metrics |
+| `apyx-serde-ext` | `crates/apyx-serde-ext` | Serde helpers for common wire encodings (e.g. decimal U256) |
 | `dune-client` | `crates/dune-client` | Client for the [Dune Analytics API](https://docs.dune.com/api-reference/overview/introduction) |
+| `safe-client` | `crates/safe-client` | Client for the Safe Transaction Service API |
 
 ## Usage
 
@@ -15,7 +17,7 @@ Crates are consumed as git dependencies pinned to a tag:
 
 ```toml
 [dependencies]
-dune-client = { git = "https://github.com/apyx-labs/toolkit", tag = "v0.1.0" }
+safe-client = { git = "https://github.com/apyx-labs/toolkit", tag = "v0.2.0" }
 ```
 
 ## Development

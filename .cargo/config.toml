@@ -2,5 +2,7 @@
 ci-sort   = "sort --workspace --grouped"
 ci-test   = "nextest run --workspace --all-features --all-targets"
 ci-clippy = "clippy --workspace --all-targets --all-features -- -D warnings -D rust-2018-idioms"
-ci-audit  = "audit -D warnings"
-ci-udeps  = "udeps --workspace --all-targets --all-features"
+# Ignore unmaintained transitive crates pulled in via alloy (derivative, paste).
+# Not vulns; remove when alloy drops them.
+ci-audit = "audit -D warnings --ignore RUSTSEC-2024-0388 --ignore RUSTSEC-2024-0436"
+ci-udeps = "udeps --workspace --all-targets --all-features"
