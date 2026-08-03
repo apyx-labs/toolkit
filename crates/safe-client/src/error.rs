@@ -8,6 +8,8 @@ pub enum Error {
     InvalidApiKey(#[source] reqwest::header::InvalidHeaderValue),
     #[error("invalid base URL: {0}")]
     InvalidBaseUrl(#[source] url::ParseError),
+    #[error("unsupported Safe Transaction Service network: {0:?}")]
+    UnsupportedNetwork(alloy_chains::NamedChain),
     #[error("error sending request: {0}")]
     SendRequest(#[source] reqwest_middleware::Error),
     #[error("failed to deserialize response: {0}")]

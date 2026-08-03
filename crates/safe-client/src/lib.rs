@@ -15,7 +15,6 @@ pub mod signing;
 
 pub use apyx_reqwest_middleware::{HeaderAuthMiddleware, RebaseUrlMiddleware, RouteLabel};
 pub use client::SafeClient;
-pub use common::types::Network;
 pub use error::Error;
 pub use middleware::{API_KEY_HEADER, auth_middleware, rebase_middleware};
 pub use network::{DEFAULT_BASE_URL, SafeNetworkSlug, base_url};

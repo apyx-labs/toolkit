@@ -140,7 +140,7 @@ mod tests {
             gas_token: None,
             refund_receiver: None,
             nonce: U256::from(3u64),
-            origin: Some("apyx".to_string()),
+            origin: Some("test".to_string()),
         }
     }
 

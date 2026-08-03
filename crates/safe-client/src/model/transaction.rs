@@ -71,7 +71,7 @@ pub struct CreateMultisigTransactionRequest {
     pub safe: Address,
     #[serde(serialize_with = "crate::serde_addr::serialize")]
     pub to: Address,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub value: U256,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<Bytes>,
@@ -81,18 +81,18 @@ pub struct CreateMultisigTransactionRequest {
         serialize_with = "crate::serde_addr::option::serialize"
     )]
     pub gas_token: Option<Address>,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub safe_tx_gas: U256,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub base_gas: U256,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub gas_price: U256,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "crate::serde_addr::option::serialize"
     )]
     pub refund_receiver: Option<Address>,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub nonce: U256,
     pub contract_transaction_hash: B256,
     #[serde(serialize_with = "crate::serde_addr::serialize")]
@@ -113,22 +113,22 @@ pub struct CreateMultisigTransactionRequest {
 pub struct MultisigTransaction {
     pub safe: Address,
     pub to: Address,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub value: U256,
     #[serde(default)]
     pub data: Option<Bytes>,
     pub operation: u8,
     #[serde(default)]
     pub gas_token: Option<Address>,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub safe_tx_gas: U256,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub base_gas: U256,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub gas_price: U256,
     #[serde(default)]
     pub refund_receiver: Option<Address>,
-    #[serde(with = "common::serde::u256::from_dec")]
+    #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub nonce: U256,
     pub safe_tx_hash: B256,
     #[serde(default)]
@@ -187,7 +187,7 @@ mod tests {
             contract_transaction_hash: B256::ZERO,
             sender: Address::with_last_byte(0x33),
             signature: Bytes::from(vec![0xab, 0xcd]),
-            origin: Some("apyx".to_string()),
+            origin: Some("test".to_string()),
         };
         let v = serde_json::to_value(&req).expect("serialize");
         assert_eq!(v["value"], "1000000000000000000");
@@ -195,7 +195,7 @@ mod tests {
         assert_eq!(v["operation"], 0);
         assert!(v.get("data").is_none(), "None data must be omitted");
         assert!(v.get("gasToken").is_none());
-        assert_eq!(v["origin"], "apyx");
+        assert_eq!(v["origin"], "test");
     }
 
     #[test]

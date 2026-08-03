@@ -1,7 +1,6 @@
-//! Safe Transaction Service base-URL construction over the shared
-//! [`common::types::Network`] enum.
+//! Safe Transaction Service base-URL construction over [`alloy_chains::NamedChain`].
 
-use common::types::Network;
+use alloy_chains::NamedChain;
 use reqwest::Url;
 
 use crate::Error;
@@ -11,34 +10,30 @@ use crate::Error;
 /// to the caller's chosen network (or a mock server in tests).
 pub const DEFAULT_BASE_URL: &str = "https://api.safe.global/tx-service/eth/api/v2";
 
-/// Maps a [`Network`] to the EIP-3770 short name the Safe gateway expects in its
-/// path, e.g. `eth` in `https://api.safe.global/tx-service/eth/api/v2`.
-///
-/// This Safe-specific slug lives in the client crate (rather than on the shared
-/// `Network` type) so `common` stays free of service-specific naming.
+/// Maps a [`NamedChain`] to the EIP-3770 short name the Safe gateway expects.
 pub trait SafeNetworkSlug {
-    /// The Safe gateway path slug for this network.
-    fn safe_slug(&self) -> &'static str;
+    /// The Safe gateway path slug for this network, if supported.
+    fn safe_slug(&self) -> Option<&'static str>;
 }
 
-impl SafeNetworkSlug for Network {
-    fn safe_slug(&self) -> &'static str {
+impl SafeNetworkSlug for NamedChain {
+    fn safe_slug(&self) -> Option<&'static str> {
         match self {
-            Network::Mainnet => "eth",
-            Network::Base => "base",
-            Network::ArbitrumOne => "arb1",
-            Network::Sepolia => "sep",
+            NamedChain::Mainnet => Some("eth"),
+            NamedChain::Base => Some("base"),
+            NamedChain::Arbitrum => Some("arb1"),
+            NamedChain::Sepolia => Some("sep"),
+            _ => None,
         }
     }
 }
 
-/// Builds the Safe Transaction Service v2 base URL for a network, e.g.
-/// `https://api.safe.global/tx-service/base/api/v2`.
-pub fn base_url(network: Network) -> Result<Url, Error> {
-    let raw = format!(
-        "https://api.safe.global/tx-service/{}/api/v2",
-        network.safe_slug()
-    );
+/// Builds the Safe Transaction Service v2 base URL for a supported network.
+pub fn base_url(network: NamedChain) -> Result<Url, Error> {
+    let slug = network
+        .safe_slug()
+        .ok_or(Error::UnsupportedNetwork(network))?;
+    let raw = format!("https://api.safe.global/tx-service/{slug}/api/v2");
     Url::parse(&raw).map_err(Error::InvalidBaseUrl)
 }
 
@@ -48,7 +43,7 @@ mod tests {
 
     #[test]
     fn mainnet_base_url_is_eth_slug() {
-        let url = base_url(Network::Mainnet).expect("valid url");
+        let url = base_url(NamedChain::Mainnet).expect("valid url");
         assert_eq!(
             url.as_str(),
             "https://api.safe.global/tx-service/eth/api/v2"
@@ -58,19 +53,19 @@ mod tests {
     #[test]
     fn base_url_uses_eip3770_slugs() {
         assert!(
-            base_url(Network::Base)
+            base_url(NamedChain::Base)
                 .expect("url")
                 .as_str()
                 .contains("/base/")
         );
         assert!(
-            base_url(Network::ArbitrumOne)
+            base_url(NamedChain::Arbitrum)
                 .expect("url")
                 .as_str()
                 .contains("/arb1/")
         );
         assert!(
-            base_url(Network::Sepolia)
+            base_url(NamedChain::Sepolia)
                 .expect("url")
                 .as_str()
                 .contains("/sep/")
@@ -79,9 +74,18 @@ mod tests {
 
     #[test]
     fn safe_slugs_match_eip3770() {
-        assert_eq!(Network::Mainnet.safe_slug(), "eth");
-        assert_eq!(Network::Base.safe_slug(), "base");
-        assert_eq!(Network::ArbitrumOne.safe_slug(), "arb1");
-        assert_eq!(Network::Sepolia.safe_slug(), "sep");
+        assert_eq!(NamedChain::Mainnet.safe_slug(), Some("eth"));
+        assert_eq!(NamedChain::Base.safe_slug(), Some("base"));
+        assert_eq!(NamedChain::Arbitrum.safe_slug(), Some("arb1"));
+        assert_eq!(NamedChain::Sepolia.safe_slug(), Some("sep"));
+    }
+
+    #[test]
+    fn unsupported_network_errors() {
+        let err = base_url(NamedChain::Optimism).expect_err("unsupported");
+        assert!(matches!(
+            err,
+            Error::UnsupportedNetwork(NamedChain::Optimism)
+        ));
     }
 }
