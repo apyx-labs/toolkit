@@ -67,9 +67,9 @@ impl MultisigTransactionProposal {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateMultisigTransactionRequest {
-    #[serde(serialize_with = "crate::serde_addr::serialize")]
+    #[serde(serialize_with = "apyx_serde_ext::address::serialize")]
     pub safe: Address,
-    #[serde(serialize_with = "crate::serde_addr::serialize")]
+    #[serde(serialize_with = "apyx_serde_ext::address::serialize")]
     pub to: Address,
     #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub value: U256,
@@ -78,7 +78,7 @@ pub struct CreateMultisigTransactionRequest {
     pub operation: u8,
     #[serde(
         skip_serializing_if = "Option::is_none",
-        serialize_with = "crate::serde_addr::option::serialize"
+        serialize_with = "apyx_serde_ext::address::option::serialize"
     )]
     pub gas_token: Option<Address>,
     #[serde(with = "apyx_serde_ext::u256::from_dec")]
@@ -89,13 +89,13 @@ pub struct CreateMultisigTransactionRequest {
     pub gas_price: U256,
     #[serde(
         skip_serializing_if = "Option::is_none",
-        serialize_with = "crate::serde_addr::option::serialize"
+        serialize_with = "apyx_serde_ext::address::option::serialize"
     )]
     pub refund_receiver: Option<Address>,
     #[serde(with = "apyx_serde_ext::u256::from_dec")]
     pub nonce: U256,
     pub contract_transaction_hash: B256,
-    #[serde(serialize_with = "crate::serde_addr::serialize")]
+    #[serde(serialize_with = "apyx_serde_ext::address::serialize")]
     pub sender: Address,
     /// Owner signature over the SafeTx digest, serialized as a `0x`-prefixed
     /// hex string. Per-owner format (NOT the concatenated `execTransaction`

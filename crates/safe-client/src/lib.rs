@@ -10,7 +10,6 @@ mod error;
 mod middleware;
 pub mod model;
 mod network;
-mod serde_addr;
 pub mod signing;
 
 pub use apyx_reqwest_middleware::{HeaderAuthMiddleware, RebaseUrlMiddleware, RouteLabel};
