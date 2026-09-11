@@ -72,13 +72,16 @@ impl Middleware for MetricsMiddleware {
         }
         ext.insert(AttemptCount(attempt + 1));
 
-        // Note: never hold a `Family::get_or_create` guard across the await
-        // point, so inc/dec each acquire and release independently.
-        self.metrics.inc_active(method, path);
+        // The decrement has to survive the future being dropped at the await
+        // below: hyper cancels a handler when its downstream client
+        // disconnects, and a caller-side `timeout` cancels the same way. A
+        // plain statement after `.await` never runs on that path, so every
+        // abandoned request permanently leaks one count — and a gauge only
+        // falls back to truth on process restart.
+        let _active = ActiveRequest::begin(&self.metrics, method, path);
         let start = Instant::now();
         let result = next.run(req, ext).await;
         let elapsed = start.elapsed().as_secs_f64();
-        self.metrics.dec_active(method, path);
 
         let status_code = match &result {
             Ok(response) => response.status().as_u16().to_string(),
@@ -88,6 +91,36 @@ impl Middleware for MetricsMiddleware {
             .record_request(method, path, status_code, elapsed);
 
         result
+    }
+}
+
+/// Holds one count on the in-flight gauge for as long as it is alive.
+///
+/// `Drop` rather than a trailing `dec_active` call so cancellation releases
+/// the count too — see [`MetricsMiddleware::handle`]. Labels are `&'static
+/// str`, so the guard borrows nothing from the request.
+struct ActiveRequest {
+    metrics: Metrics,
+    method: &'static str,
+    path: &'static str,
+}
+
+impl ActiveRequest {
+    /// Increment the gauge. Cloning [`Metrics`] is cheap — it is an
+    /// `Arc`-backed handle onto the same families.
+    fn begin(metrics: &Metrics, method: &'static str, path: &'static str) -> Self {
+        metrics.inc_active(method, path);
+        Self {
+            metrics: metrics.clone(),
+            method,
+            path,
+        }
+    }
+}
+
+impl Drop for ActiveRequest {
+    fn drop(&mut self) {
+        self.metrics.dec_active(self.method, self.path);
     }
 }
 
@@ -233,6 +266,47 @@ mod tests {
             encoded
                 .contains(r#"active_requests{module="test-client",method="GET",path="/thing"} 0"#),
             "expected in-flight gauge back to 0:\n{encoded}"
+        );
+    }
+
+    /// A caller that gives up mid-flight (here: `tokio::time::timeout`, in
+    /// production: hyper dropping a proxy handler when the downstream client
+    /// disconnects) drops the middleware future at its `next.run` await. The
+    /// in-flight gauge must still return to zero — a decrement that only runs
+    /// on the completion path leaks one count per abandoned request, and a
+    /// gauge only ever climbs back down on process restart. Observed in the
+    /// egress proxy as `active_requests` ramping to 1159 during an upstream
+    /// brownout and never draining.
+    #[tokio::test]
+    async fn a_cancelled_request_still_releases_the_in_flight_gauge() {
+        let server = MockServer::start().await;
+        Mock::given(method("GET"))
+            .and(path("/slow"))
+            .respond_with(ResponseTemplate::new(200).set_delay(Duration::from_secs(30)))
+            .mount(&server)
+            .await;
+
+        let metrics = Metrics::new("test-client");
+        let client = metered_client(metrics.clone());
+
+        let elapsed = tokio::time::timeout(
+            Duration::from_millis(50),
+            client
+                .get(format!("{}/slow", server.uri()))
+                .with_extension(RouteLabel("/slow"))
+                .send(),
+        )
+        .await;
+        assert!(
+            elapsed.is_err(),
+            "the request must still be in flight when dropped"
+        );
+
+        let encoded = encode_metrics(&metrics);
+        assert!(
+            encoded
+                .contains(r#"active_requests{module="test-client",method="GET",path="/slow"} 0"#),
+            "cancelled request leaked an in-flight count:\n{encoded}"
         );
     }
 }
