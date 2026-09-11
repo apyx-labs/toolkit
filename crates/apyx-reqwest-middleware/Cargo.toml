@@ -16,7 +16,7 @@ reqwest-middleware.workspace = true
 
 [dev-dependencies]
 reqwest-retry      = { workspace = true, features = ["default"] }
-tokio              = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tokio              = { workspace = true, features = ["macros", "rt-multi-thread", "time"] }
 wiremock.workspace = true
 
 [lints]
